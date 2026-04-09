@@ -1,0 +1,101 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* TOPO */
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    color: #2e7d32;
+}
+
+.menu a:hover {
+    opacity: 2;
+     background-color: #2e7d32;
+    color: white;
+}
+
+.menu a {
+    margin-left: 25px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+/* ÁREA PRINCIPAL */
+.principal {
+    height: 85vh;
+    display: flex;
+    align-items: center;
+    padding-left: 80px;
+    background: linear-gradient(to right, #e8f5e9, #ffffff);
+}
+
+.conteudo {
+    max-width: 500px;
+}
+
+.conteudo h1 {
+    font-size: 42px;
+    color: #2e7d32;
+}
+
+.conteudo p {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #555;
+}
+
+/* BOTÕES */
+.buttons-area {
+    margin-top: 30px;
+}
+
+.button {
+    display: inline-block;
+    padding: 15px 25px;
+    margin-right: 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+/* PACIENTE */
+.btn-paciente {
+    background-color: #2e7d32;
+    color: white;
+}
+
+.btn-paciente:hover {
+    background-color: #1b5e20;
+}
+
+/* PSICÓLOGO */
+.btn-psicologo {
+    border: 2px solid #2e7d32;
+    color: #2e7d32;
+}
+
+.btn-psicologo:hover {
+    background-color: #2e7d32;
+    color: white;
+}
+
+/* RODAPÉ */
+.rodape {
+    text-align: center;
+    padding: 15px;
+    background-color: #f1f1f1;
+    font-size: 14px;
+}
