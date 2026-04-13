@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topo">
+    <h2 class="logo">VivaMente</h2>
+
+    <nav class="menu">
+        <a href="index.html">Início</a>
+        <a href="comoFunciona.html">Como funciona</a>
+        <a href="cadastro.html">Cadastrar</a>
+    </nav>
+</header>
+
+<section class="principal">
+    <div class="conteudo">
+
+        <h1>Login</h1>
+
+        <!--<form action="sistema.php" method="POST" class="formulario">
+
+            <input type="hidden" name="acao" value="login"> -->
+
+            <form action="sistema.php" method="POST">
+
+            <input type="hidden" name="acao" value="login">
+
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+
+            <button class="button btn-paciente">Entrar</button>
+
+        </form>
+
+    </div>
+</section>
+
+<footer class="rodape">
+    <p>© VivaMente</p>
+</footer>
+
+<script>
+if (window.location.search.includes("sucesso=1")) {
+    alert("Cadastro realizado com sucesso!");
+}
+</script>
+
+</body>
+</html>

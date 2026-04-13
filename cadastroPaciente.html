@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro - VivaMente</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topo">
+    <h2 class="logo">VivaMente</h2>
+
+    <nav class="menu">
+        <a href="index.html">Início</a>
+        <a href="comoFunciona.html">Como funciona</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<section class="principal">
+    <div class="conteudo">
+
+        <h1>Cadastro de Paciente</h1>
+
+        <form action="sistema.php" method="POST" class="formulario">
+
+            <input type="hidden" name="acao" value="cadastrar_paciente">
+
+            <input type="text" name="nome" placeholder="Nome completo" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <input type="date" name="data_nascimento">
+
+            <button class="button btn-paciente">Cadastrar</button>
+
+        </form>
+
+    </div>
+</section>
+
+<footer class="rodape">
+    <p>© VivaMente</p>
+</footer>
+
+</body>
+</html>

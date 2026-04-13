@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<title>Formulário</title>
+</head>
+
+<body>
+
+<section class="principal">
+    <div class="conteudo">
+
+        <h1>Descreva como você está se sentindo</h1>
+
+        <form action="/TCC_Joao/sistema.php" method="POST" class="formulario">
+
+            <input type="hidden" name="acao" value="enviar_formulario">
+
+            <textarea name="descricao" placeholder="Descreva seus sintomas..." required></textarea>
+
+            <button type="submit" class="button btn-paciente">
+                Enviar
+            </button>
+
+        </form>
+
+    </div>
+</section>
+
+<script>
+if (window.location.search.includes("ok=1")) {
+    alert("Formulário enviado com sucesso!");
+}
+</script>
+
+</body>
+</html>

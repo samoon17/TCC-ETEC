@@ -1,0 +1,343 @@
+<?php
+ob_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// ================== CONEXÃO ==================
+$pdo = new PDO("mysql:host=localhost;dbname=plataforma_saude_mental;charset=utf8", "root", "");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+
+// ================== FUNÇÕES ==================
+
+function iniciarSessao() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
+
+function getIP() {
+    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+}
+
+
+// ================== CADASTRO PACIENTE ==================
+
+function cadastrarPaciente($nome, $email, $senha, $dataNascimento = null) {
+    global $pdo;
+
+    $check = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
+    $check->execute([$email]);
+
+    if ($check->fetch()) {
+        return "Email já existe";
+    }
+
+    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+
+    $stmt = $pdo->prepare("
+        INSERT INTO usuario (nome, email, senha, tipo_usuario, data_nascimento)
+        VALUES (?, ?, ?, 'paciente', ?)
+    ");
+
+    $stmt->execute([$nome, $email, $senhaHash, $dataNascimento]);
+
+    return "Paciente cadastrado!";
+}
+
+
+// ================== CADASTRO PROFISSIONAL ==================
+
+function cadastrarProfissional($nome, $email, $senha, $registro, $cidade, $estado) {
+    global $pdo;
+
+    try {
+        $pdo->beginTransaction();
+
+        $check = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
+        $check->execute([$email]);
+
+        if ($check->fetch()) {
+            return "Email já existe";
+        }
+
+        $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+
+        $stmt = $pdo->prepare("
+            INSERT INTO usuario (nome, email, senha, tipo_usuario)
+            VALUES (?, ?, ?, 'profissional')
+        ");
+        $stmt->execute([$nome, $email, $senhaHash]);
+
+        $idUsuario = $pdo->lastInsertId();
+
+        $stmt = $pdo->prepare("
+            INSERT INTO profissional (id_usuario, registro_profissional, cidade, estado)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->execute([$idUsuario, $registro, $cidade, $estado]);
+
+        $pdo->commit();
+
+        return "Profissional cadastrado!";
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return "Erro: " . $e->getMessage();
+    }
+}
+
+
+// ================== BRUTE FORCE ==================
+
+function estaBloqueado($email, $ip) {
+    global $pdo;
+
+    $stmt = $pdo->prepare("SELECT bloqueado_ate FROM login_tentativas WHERE email = ? AND ip = ?");
+    $stmt->execute([$email, $ip]);
+
+    $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$dados) return false;
+
+    return $dados['bloqueado_ate'] && strtotime($dados['bloqueado_ate']) > time();
+}
+
+function registrarErroLogin($email, $ip) {
+    global $pdo;
+
+    $stmt = $pdo->prepare("SELECT * FROM login_tentativas WHERE email = ? AND ip = ?");
+    $stmt->execute([$email, $ip]);
+
+    $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $MAX = 5;
+    $BLOQUEIO_MIN = 15;
+
+    if ($dados) {
+
+        $tentativas = $dados['tentativas'] + 1;
+        $bloqueadoAte = null;
+
+        if ($tentativas >= $MAX) {
+            $bloqueadoAte = date("Y-m-d H:i:s", strtotime("+$BLOQUEIO_MIN minutes"));
+            $tentativas = 0;
+        }
+
+        $update = $pdo->prepare("
+            UPDATE login_tentativas 
+            SET tentativas = ?, bloqueado_ate = ?, ultimo_login = NOW()
+            WHERE id = ?
+        ");
+
+        $update->execute([$tentativas, $bloqueadoAte, $dados['id']]);
+
+    } else {
+
+        $insert = $pdo->prepare("
+            INSERT INTO login_tentativas (email, ip, tentativas, ultimo_login)
+            VALUES (?, ?, 1, NOW())
+        ");
+
+        $insert->execute([$email, $ip]);
+    }
+}
+
+function resetarTentativas($email, $ip) {
+    global $pdo;
+
+    $stmt = $pdo->prepare("DELETE FROM login_tentativas WHERE email = ? AND ip = ?");
+    $stmt->execute([$email, $ip]);
+}
+
+
+// ================== LOGIN ==================
+
+function login($email, $senha) {
+    global $pdo;
+
+    $ip = getIP();
+
+    if (estaBloqueado($email, $ip)) {
+        return "Muitas tentativas. Tente mais tarde.";
+    }
+
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
+    $stmt->execute([$email]);
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || !password_verify($senha, $user['senha'])) {
+        registrarErroLogin($email, $ip);
+        return "Email ou senha inválidos";
+    }
+
+    if ($user['status'] !== 'ativo') {
+        return "Conta inativa";
+    }
+
+    resetarTentativas($email, $ip);
+
+    iniciarSessao();
+    session_regenerate_id(true);
+
+    $_SESSION['id'] = $user['id_usuario'];
+    $_SESSION['nome'] = $user['nome'];
+    $_SESSION['tipo'] = $user['tipo_usuario'];
+
+    return "OK";
+}
+
+
+// ================== CONTROLLER ==================
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao'])) {
+
+    $acao = $_POST['acao'];
+
+    switch ($acao) {
+
+        // ================= CADASTRO PACIENTE =================
+        case 'cadastrar_paciente':
+
+            $nome = trim($_POST['nome'] ?? '');
+            $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $senha = $_POST['senha'] ?? '';
+
+            if (!$nome || !$email || !$senha) {
+                echo "Dados inválidos";
+                exit;
+            }
+
+            $resultado = cadastrarPaciente(
+                $nome,
+                $email,
+                $senha,
+                $_POST['data_nascimento'] ?? null
+            );
+
+            if ($resultado === "Paciente cadastrado!") {
+                header("Location: login.html?sucesso=1");
+                exit;
+            }
+
+            echo $resultado;
+            break;
+
+
+        // ================= CADASTRO PROFISSIONAL =================
+        case 'cadastrar_profissional':
+
+            $resultado = cadastrarProfissional(
+                $_POST['nome'],
+                $_POST['email'],
+                $_POST['senha'],
+                $_POST['registro'],
+                $_POST['cidade'],
+                $_POST['estado']
+            );
+
+            if ($resultado === "Profissional cadastrado!") {
+                header("Location: login.html?sucesso=1");
+                exit;
+            }
+
+            echo $resultado;
+            break;
+
+
+        // ================= LOGIN =================
+        case 'login':
+
+            $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $senha = $_POST['senha'] ?? '';
+
+            if (!$email || !$senha) {
+                echo "Dados inválidos";
+                exit;
+            }
+
+            $resultado = login($email, $senha);
+
+            if ($resultado === "OK") {
+
+                iniciarSessao();
+
+                if ($_SESSION['tipo'] === 'paciente') {
+                    header("Location: painelFormPaciente.php");
+                } else {
+                    header("Location: painelFormProfissional.php");
+                }
+
+                exit;
+            }
+
+            echo $resultado;
+            break;
+
+
+        // ================= FORM PACIENTE =================
+        case 'enviar_formulario':
+
+            iniciarSessao();
+
+            if (!isset($_SESSION['id'])) {
+                echo "Não autenticado";
+                exit;
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO formulario_consulta (id_paciente, descricao)
+                VALUES (?, ?)
+            ");
+
+            $stmt->execute([
+                $_SESSION['id'],
+                $_POST['descricao']
+            ]);
+
+            header("Location: painelFormPaciente.php");
+            exit;
+
+
+        // ================= CRIAR CONSULTA =================
+        case 'criar_consulta':
+
+            iniciarSessao();
+
+            if (!isset($_SESSION['id']) || $_SESSION['tipo'] !== 'profissional') {
+                echo "Acesso negado";
+                exit;
+            }
+
+            // pega id_profissional
+            $stmtProf = $pdo->prepare("
+                SELECT id_profissional 
+                FROM profissional 
+                WHERE id_usuario = ?
+            ");
+            $stmtProf->execute([$_SESSION['id']]);
+            $prof = $stmtProf->fetch(PDO::FETCH_ASSOC);
+
+            if (!$prof) {
+                echo "Profissional não encontrado";
+                exit;
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO consulta 
+                (id_paciente, id_profissional, data_hora, link_chamada)
+                VALUES (?, ?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $_POST['id_paciente'],
+                $prof['id_profissional'],
+                $_POST['data_hora'],
+                $_POST['link_chamada']
+            ]);
+
+            header("Location: painel_profissional.php");
+            exit;
+    }
+}

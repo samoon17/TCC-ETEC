@@ -1,0 +1,93 @@
+<?php
+session_start();
+
+if ($_SESSION['tipo'] !== 'paciente') {
+    header("Location: login.html");
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Paciente</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topo">
+    <h2 class="logo">VivaMente</h2>
+
+    <nav class="menu">
+        <a href="index.html">Início</a>
+        <a href="#">Painel</a>
+        <a href="formulario.php">Formulário</a>
+        <a href="logout.php">Sair</a>
+    </nav>
+</header>
+
+<section class="principal">
+
+    <div class="conteudo">
+
+        <h1>Olá, <?= $_SESSION['nome'] ?></h1>
+        <p>Acompanhe suas consultas e envie novas solicitações.</p>
+
+        <div class="buttons-area">
+
+            <a href="formulario.php" class="button btn-paciente">
+                Preencher formulário
+            </a>
+
+        </div>
+
+        <!-- CONSULTAS -->
+        <div style="margin-top: 40px; text-align:left;">
+
+            <h2>Minhas consultas</h2>
+
+            <?php
+            require_once "sistema.php";
+
+            $stmt = $pdo->prepare("
+                SELECT c.*, u.nome as profissional
+                FROM consulta c
+                JOIN profissional p ON p.id_profissional = c.id_profissional
+                JOIN usuario u ON u.id_usuario = p.id_usuario
+                WHERE c.id_paciente = ?
+            ");
+
+            $stmt->execute([$_SESSION['id']]);
+            $consultas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($consultas as $c):
+            ?>
+
+            <div class="card">
+                <p><strong>Profissional:</strong> <?= $c['profissional'] ?></p>
+                <p><strong>Data:</strong> <?= $c['data_hora'] ?></p>
+
+                <?php if ($c['link_meet']): ?>
+                    <a href="<?= $c['link_meet'] ?>" target="_blank" class="button btn-psicologo">
+                        Entrar na consulta
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <?php endforeach; ?>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer class="rodape">
+    <p>© VivaMente</p>
+</footer>
+
+</body>
+</html>

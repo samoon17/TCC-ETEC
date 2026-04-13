@@ -1,0 +1,118 @@
+CREATE DATABASE plataforma_saude_mental;
+USE plataforma_saude_mental;
+CREATE TABLE usuario (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    tipo_usuario ENUM('paciente','profissional','admin') NOT NULL,
+    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('ativo','inativo','bloqueado') DEFAULT 'ativo'
+);
+CREATE TABLE profissional (
+    id_profissional INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    registro_profissional VARCHAR(50),
+    descricao TEXT,
+    cidade VARCHAR(100),
+    estado VARCHAR(50),
+    validado BOOLEAN DEFAULT FALSE,
+
+    CONSTRAINT fk_profissional_usuario
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario)
+    ON DELETE CASCADE
+);
+CREATE TABLE especialidade (
+    id_especialidade INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT
+);
+CREATE TABLE profissional_especialidade (
+    id_profissional INT,
+    id_especialidade INT,
+
+    PRIMARY KEY (id_profissional, id_especialidade),
+
+    CONSTRAINT fk_prof_esp_profissional
+    FOREIGN KEY (id_profissional)
+    REFERENCES profissional(id_profissional)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_prof_esp_especialidade
+    FOREIGN KEY (id_especialidade)
+    REFERENCES especialidade(id_especialidade)
+    ON DELETE CASCADE
+);
+CREATE TABLE sintoma (
+    id_sintoma INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    descricao TEXT,
+    categoria VARCHAR(100),
+
+    CONSTRAINT fk_sintoma_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuario(id_usuario)
+        ON DELETE CASCADE
+);
+CREATE TABLE mensagem (
+    id_mensagem INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    titulo VARCHAR(150),
+    conteudo TEXT NOT NULL,
+    tipo ENUM('consulta','aviso','sistema') DEFAULT 'aviso',
+    lida BOOLEAN DEFAULT FALSE,
+    data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_mensagem_usuario
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario)
+    ON DELETE CASCADE
+);
+
+
+
+INSERT INTO especialidade (nome, descricao) VALUES
+('Psicologia','Tratamento psicológico'),
+('Psiquiatria','Tratamento médico de transtornos mentais'),
+('Terapia','Acompanhamento terapêutico'),
+('Assistência Social','Orientação social e familiar');
+
+INSERT INTO usuario (nome, email, senha, tipo_usuario, status)
+VALUES (
+'Administrador do Sistema',
+'admin@plataforma.com',
+'123456',
+'admin',
+'ativo'
+);
+
+CREATE TABLE consulta (
+    id_consulta INT AUTO_INCREMENT PRIMARY KEY,
+    id_paciente INT NOT NULL,
+    id_profissional INT NOT NULL,
+    data_hora DATETIME NOT NULL,
+    status ENUM('agendada','confirmada','cancelada','finalizada') DEFAULT 'agendada',
+    tipo ENUM('online','presencial') DEFAULT 'online',
+    link_chamada VARCHAR(255),
+    observacoes TEXT,
+
+    CONSTRAINT fk_consulta_paciente
+    FOREIGN KEY (id_paciente)
+    REFERENCES usuario(id_usuario)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_consulta_profissional
+    FOREIGN KEY (id_profissional)
+    REFERENCES profissional(id_profissional)
+    ON DELETE CASCADE
+);
+INSERT INTO profissional (id_usuario, registro_profissional, cidade, estado)
+VALUES (1, '12345', 'Brasília', 'DF');
+
+INSERT INTO consulta (id_paciente, id_profissional, data_hora, tipo)
+VALUES (1, 1, '2026-04-19 14:00:00', 'online');
+
+ALTER TABLE usuario
+ADD COLUMN data_nascimento DATE;

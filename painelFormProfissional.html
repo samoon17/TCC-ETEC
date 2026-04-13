@@ -1,0 +1,84 @@
+<?php
+session_start();
+
+if ($_SESSION['tipo'] !== 'profissional') {
+    header("Location: login.html");
+    exit;
+}
+
+require_once "sistema.php";
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Profissional</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topo">
+    <h2 class="logo">VivaMente</h2>
+
+    <nav class="menu">
+        <a href="index.html">Início</a>
+        <a href="#">Painel</a>
+        <a href="logout.php">Sair</a>
+    </nav>
+</header>
+
+<section class="principal">
+
+    <div class="conteudo">
+
+        <h1>Olá, Dr(a). <?= $_SESSION['nome'] ?></h1>
+        <p>Analise solicitações e crie consultas.</p>
+
+        <!-- FORMULÁRIOS RECEBIDOS -->
+        <div style="margin-top: 40px; text-align:left;">
+
+            <h2>Solicitações de pacientes</h2>
+
+            <?php
+            $stmt = $pdo->query("
+                SELECT f.*, u.nome 
+                FROM formulario_consulta f
+                JOIN usuario u ON u.id_usuario = f.id_paciente
+                WHERE f.status = 'pendente'
+            ");
+
+            $formularios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($formularios as $f):
+            ?>
+
+            <div class="card">
+                <p><strong>Paciente:</strong> <?= $f['nome'] ?></p>
+                <p><?= $f['descricao'] ?></p>
+
+                <form action="sistema.php" method="POST">
+                    <input type="hidden" name="id_formulario" value="<?= $f['id'] ?>">
+
+                    <button name="acao" value="aprovar_formulario" class="button btn-psicologo">
+                        Criar consulta
+                    </button>
+                </form>
+            </div>
+
+            <?php endforeach; ?>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer class="rodape">
+    <p>© VivaMente</p>
+</footer>
+
+</body>
+</html>
