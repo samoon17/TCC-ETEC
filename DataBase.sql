@@ -8,7 +8,7 @@ CREATE TABLE login_tentativas (
     tentativas INT DEFAULT 0,
     bloqueado_ate DATETIME,
     ultimo_login DATETIME,
-    
+
     UNIQUE KEY unique_tentativa (email, ip)
 );
 
@@ -28,6 +28,8 @@ CREATE TABLE profissional (
     id_usuario INT NOT NULL,
     registro_profissional VARCHAR(50),
     descricao TEXT,
+    especialidade VARCHAR(120),
+    valor_consulta DECIMAL(10,2),
     cidade VARCHAR(100),
     estado VARCHAR(50),
     validado BOOLEAN DEFAULT FALSE,
@@ -62,6 +64,7 @@ CREATE TABLE consulta (
     id_paciente INT NOT NULL,
     id_profissional INT NOT NULL,
     data_hora DATETIME NOT NULL,
+    link_chamada VARCHAR(255),
     status ENUM('agendada','confirmada','cancelada','finalizada') DEFAULT 'agendada',
     tipo ENUM('online','presencial') DEFAULT 'online',
 
@@ -69,11 +72,41 @@ CREATE TABLE consulta (
     FOREIGN KEY (id_profissional) REFERENCES profissional(id_profissional)
 );
 
+CREATE TABLE formulario_consulta (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_paciente INT NOT NULL,
+    id_profissional INT,
+    descricao TEXT NOT NULL,
+    status ENUM('enviado','respondido') DEFAULT 'enviado',
+    data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES usuario(id_usuario)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_profissional)
+    REFERENCES profissional(id_profissional)
+    ON DELETE SET NULL
+);
+
+CREATE TABLE mensagem (
+    id_mensagem INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    titulo VARCHAR(150),
+    conteudo TEXT NOT NULL,
+    tipo ENUM('consulta','aviso','sistema') DEFAULT 'aviso',
+    lida BOOLEAN DEFAULT FALSE,
+    data_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuario(id_usuario)
+    ON DELETE CASCADE
+);
+
 INSERT INTO especialidade (nome) VALUES
 ('Psicologia'),
 ('Psiquiatria'),
 ('Terapia');
 
--- ADMIN (ATENÇÃO: depois troca a senha por hash)
 INSERT INTO usuario (nome, email, senha, tipo_usuario)
 VALUES ('Admin', 'admin@admin.com', '123456', 'admin');

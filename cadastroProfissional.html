@@ -10,7 +10,7 @@
 <body>
 
 <header class="topo">
-    <h2 class="logo">VivaMente</h2>
+    <h2 class="logo"><a href="index.html">VivaMente</a></h2>
 
     <nav class="menu">
         <a href="index.html">Início</a>
@@ -25,14 +25,18 @@
 
         <h1>Cadastro Profissional</h1>
 
-        <form action="cadastro_profissional.php" method="POST" class="formulario">
+        <form action="sistema.php" method="POST" class="formulario">
 
+            <input type="hidden" name="acao" value="cadastrar_profissional">
             <input type="text" name="nome" placeholder="Nome completo" required>
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="senha" placeholder="Senha" required>
             <input type="text" name="registro" placeholder="Registro profissional">
+            <input type="text" name="especialidade" placeholder="Especialidade (ex: Psicologia clinica)">
+            <input type="number" name="valor_consulta" placeholder="Valor da consulta" min="0" step="0.01">
             <input type="text" name="cidade" placeholder="Cidade">
             <input type="text" name="estado" placeholder="Estado">
+            <textarea name="descricao" placeholder="Sobre voce, sua abordagem e como atende os pacientes" required></textarea>
 
             <button class="button btn-psicologo">Cadastrar</button>
 
