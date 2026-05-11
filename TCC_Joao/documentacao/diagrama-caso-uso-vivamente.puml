@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Paciente" as Paciente
+actor "Profissional" as Profissional
+actor "Sistema" as Sistema
+
+rectangle "VivaMente" {
+    usecase "Cadastrar-se como paciente" as UC01
+    usecase "Cadastrar-se como profissional" as UC02
+    usecase "Informar perfil profissional" as UC03
+    usecase "Realizar login" as UC04
+    usecase "Visualizar lista de profissionais" as UC05
+    usecase "Escolher profissional" as UC06
+    usecase "Enviar formulario de atendimento" as UC07
+    usecase "Consultar historico de formularios" as UC08
+    usecase "Receber mensagens" as UC09
+    usecase "Visualizar consultas agendadas" as UC10
+    usecase "Entrar na consulta online" as UC11
+
+    usecase "Visualizar formularios recebidos" as UC12
+    usecase "Analisar solicitacao do paciente" as UC13
+    usecase "Agendar consulta" as UC14
+    usecase "Informar link da chamada" as UC15
+    usecase "Enviar notificacao ao paciente" as UC16
+    usecase "Atualizar status do formulario" as UC17
+}
+
+Paciente --> UC01
+Paciente --> UC04
+Paciente --> UC05
+Paciente --> UC06
+Paciente --> UC07
+Paciente --> UC08
+Paciente --> UC09
+Paciente --> UC10
+Paciente --> UC11
+
+Profissional --> UC02
+Profissional --> UC03
+Profissional --> UC04
+Profissional --> UC12
+Profissional --> UC13
+Profissional --> UC14
+Profissional --> UC15
+
+Sistema --> UC16
+Sistema --> UC17
+
+UC02 ..> UC03 : <<include>>
+UC06 ..> UC05 : <<include>>
+UC07 ..> UC06 : <<include>>
+UC14 ..> UC13 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+UC14 ..> UC17 : <<include>>
+UC11 ..> UC10 : <<extend>>
+
+@enduml

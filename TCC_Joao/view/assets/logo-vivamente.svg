@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="VivaMente">
+  <defs>
+    <linearGradient id="fundo" x1="38" y1="26" x2="214" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b6b73"/>
+      <stop offset="0.58" stop-color="#178b8f"/>
+      <stop offset="1" stop-color="#5aaa8d"/>
+    </linearGradient>
+    <linearGradient id="calor" x1="80" y1="76" x2="178" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8c98d"/>
+      <stop offset="1" stop-color="#f4b56f"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="128" cy="128" r="116" fill="url(#fundo)"/>
+  <path
+    d="M69 140c0-39 27-70 63-70 34 0 59 26 59 59 0 37-29 64-70 64H92c-9 0-16-7-16-16v-20c-5-4-7-10-7-17z"
+    fill="#effcf8"
+    opacity="0.96"
+  />
+  <path
+    d="M128 166c-3 0-5-1-7-3-24-21-39-35-39-54 0-13 10-24 23-24 9 0 17 4 23 12 6-8 14-12 23-12 13 0 23 11 23 24 0 19-15 33-39 54-2 2-4 3-7 3z"
+    fill="url(#calor)"
+  />
+  <path
+    d="M111 123h34M128 106v34"
+    fill="none"
+    stroke="#0b6b73"
+    stroke-width="9"
+    stroke-linecap="round"
+  />
+  <path
+    d="M88 184c20 8 52 9 78-5"
+    fill="none"
+    stroke="#effcf8"
+    stroke-width="10"
+    stroke-linecap="round"
+    opacity="0.7"
+  />
+</svg>
